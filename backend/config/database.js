@@ -1,14 +1,20 @@
 const { Pool } = require('pg');
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'brandpulse',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD,
-});
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        database: process.env.DB_NAME || 'brandpulse',
+        user: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD,
+      }
+);
 
-// Test connection
 pool.connect((err, client, release) => {
   if (err) {
     console.error('❌ Database connection error:', err.message);
@@ -18,7 +24,6 @@ pool.connect((err, client, release) => {
   }
 });
 
-// Create all tables if they don't exist
 const initDB = async () => {
   const client = await pool.connect();
   try {
